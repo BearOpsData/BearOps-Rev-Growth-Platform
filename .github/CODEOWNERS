@@ -1,0 +1,11 @@
+# Default owners for everything in the repo
+* @BearOpsData/engineering
+
+# Infrastructure and deployment
+Dockerfile* @BearOpsData/engineering
+docker-compose*.yml @BearOpsData/engineering
+.github/ @BearOpsData/engineering
+
+# Documentation
+docs/ @BearOpsData/engineering
+
