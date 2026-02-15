@@ -1,0 +1,44 @@
+name: Regression Tests
+
+on:
+  pull_request:
+    branches: [ main, dev, stage ]
+  push:
+    branches: [ main, dev, stage ]
+
+jobs:
+  regression-tests:
+    name: Run Regression Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run regression tests
+      run: npm run test:regression
+    
+    - name: Run snapshot tests
+      run: npm run test:snapshot
+    
+    - name: Run merge validation tests
+      run: npm run test:merge-validation
+    
+    - name: Fail if regression tests fail
+      if: failure()
+      run: |
+        echo "❌ Regression tests failed! Please review changes before merging."
+        exit 1
+
