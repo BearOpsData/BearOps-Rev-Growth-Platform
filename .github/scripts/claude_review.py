@@ -58,7 +58,7 @@ Please provide a detailed, actionable code review."""
     url = "https://api.anthropic.com/v1/messages"
     headers = {
         "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
+        "anthropic-version": "2024-01-01",
         "content-type": "application/json"
     }
     
@@ -68,7 +68,7 @@ Please provide a detailed, actionable code review."""
         "messages": [
             {
                 "role": "user",
-                "content": prompt
+                "content": [{"type": "text", "text": prompt}]
             }
         ]
     }
