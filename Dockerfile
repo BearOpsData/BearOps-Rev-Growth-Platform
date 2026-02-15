@@ -5,8 +5,8 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-# Use npm install if package-lock.json doesn't exist, otherwise use npm ci
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# Use npm ci for reproducible builds (package-lock.json should be committed)
+RUN npm ci --ignore-scripts
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
@@ -17,8 +17,8 @@ COPY . .
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Generate Prisma Client (only if schema exists)
+RUN if [ -f prisma/schema.prisma ]; then npx prisma generate; fi
 
 # Build the application
 RUN npm run build
@@ -46,6 +46,9 @@ EXPOSE 3000
 
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 CMD ["node", "server.js"]
 

@@ -5,8 +5,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json* ./
-# Use npm install if package-lock.json doesn't exist, otherwise use npm ci
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# Use npm ci for reproducible builds
+RUN npm ci
 
 # Copy application files
 COPY . .
