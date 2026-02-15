@@ -45,7 +45,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install anthropic
       
       - name: Review code with Claude
         id: claude-review
