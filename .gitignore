@@ -1,4 +1,4 @@
-# Dependencies
+# Dependencies (this project uses npm exclusively — do not use yarn/pnpm)
 node_modules/
 yarn.lock
 .pnp

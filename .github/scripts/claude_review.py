@@ -6,9 +6,13 @@ Calls Claude API to review code changes in a pull request.
 
 import os
 import sys
-import json
 import subprocess
-from pathlib import Path
+
+
+# Default model — override via CLAUDE_MODEL env var
+DEFAULT_MODEL = "claude-sonnet-4-20250514"
+# Conservative truncation limit (code has higher token density)
+MAX_DIFF_CHARS = 30000
 
 
 def get_diff(base_ref: str, head_ref: str) -> str:
@@ -28,17 +32,15 @@ def get_diff(base_ref: str, head_ref: str) -> str:
 
 def call_claude_api(diff_content: str, api_key: str) -> str:
     """Call Claude API to review the code."""
-    import anthropic
-    from anthropic import Anthropic
-    
+    from anthropic import Anthropic, AuthenticationError, APIError
+
     if not diff_content.strip():
         return "No code changes detected in this PR."
-    
-    # Truncate diff if too long (Claude has token limits)
-    max_diff_length = 50000  # Leave room for prompt and response
-    if len(diff_content) > max_diff_length:
-        diff_content = diff_content[:max_diff_length] + "\n\n... (diff truncated due to length)"
-    
+
+    # Truncate diff if too long (code has higher token density than prose)
+    if len(diff_content) > MAX_DIFF_CHARS:
+        diff_content = diff_content[:MAX_DIFF_CHARS] + "\n\n... (diff truncated due to length)"
+
     prompt = f"""Please review the following code changes in this pull request.
 
 Provide a comprehensive code review covering:
@@ -56,10 +58,12 @@ Code diff:
 
 Please provide a detailed, actionable code review."""
 
+    model = os.environ.get('CLAUDE_MODEL', DEFAULT_MODEL)
+
     try:
         client = Anthropic(api_key=api_key)
         message = client.messages.create(
-            model="claude-opus-4-6",
+            model=model,
             max_tokens=4000,
             messages=[
                 {
@@ -69,44 +73,31 @@ Please provide a detailed, actionable code review."""
             ]
         )
         return message.content[0].text
-    except anthropic.APIError as e:
-        return f"Error calling Claude API: {str(e)}"
-    except anthropic.AuthenticationError as e:
+    except AuthenticationError as e:
         return f"Authentication error: {str(e)}"
+    except APIError as e:
+        return f"Error calling Claude API: {str(e)}"
 
 
 def main():
     base_ref = os.environ.get('GITHUB_BASE_REF', 'main')
     head_ref = os.environ.get('GITHUB_HEAD_REF', '')
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
-    
+
     if not api_key:
         print("Error: ANTHROPIC_API_KEY environment variable not set", file=sys.stderr)
         sys.exit(1)
-    
-    # For PR events, GITHUB_HEAD_REF should be set
-    # If not, try to get from GITHUB_REF
+
     if not head_ref:
-        github_ref = os.environ.get('GITHUB_REF', '')
-        if github_ref.startswith('refs/pull/'):
-            # This is a PR ref, extract the branch
-            pr_number = github_ref.split('/')[2]
-            # We'll need to fetch the PR branch differently
-            head_ref = f"pr/{pr_number}/merge"
-        else:
-            head_ref = github_ref.replace('refs/heads/', '')
-    
-    if not head_ref:
-        print("Error: Could not determine head ref", file=sys.stderr)
+        print("Error: GITHUB_HEAD_REF not set — cannot determine PR branch", file=sys.stderr)
         sys.exit(1)
-    
+
     diff_content = get_diff(base_ref, head_ref)
     review = call_claude_api(diff_content, api_key)
-    
+
     # Output review for GitHub Actions
     print(review)
 
 
 if __name__ == "__main__":
     main()
-

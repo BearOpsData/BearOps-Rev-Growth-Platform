@@ -11,6 +11,9 @@ RUN npm ci
 # Copy application files
 COPY . .
 
+# Generate Prisma Client (if schema exists)
+RUN if [ -f prisma/schema.prisma ]; then npx prisma generate; fi
+
 # Expose port
 EXPOSE 3000
 

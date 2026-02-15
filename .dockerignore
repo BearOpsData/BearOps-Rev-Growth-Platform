@@ -45,8 +45,11 @@ docker-compose*.yml
 # Documentation
 README.md
 QUICKSTART.md
-docs
-*.md
+DOCKER.md
+QUICK_START_DOCKER.md
+SECURITY.md
+TESTING.md
+docs/
 
 # Misc
 .cache
