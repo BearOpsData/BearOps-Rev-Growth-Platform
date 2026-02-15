@@ -28,6 +28,7 @@ def get_diff(base_ref: str, head_ref: str) -> str:
 
 def call_claude_api(diff_content: str, api_key: str) -> str:
     """Call Claude API to review the code."""
+    import anthropic
     from anthropic import Anthropic
     
     if not diff_content.strip():
@@ -58,7 +59,7 @@ Please provide a detailed, actionable code review."""
     try:
         client = Anthropic(api_key=api_key)
         message = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-20250514",
             max_tokens=4000,
             messages=[
                 {
@@ -68,8 +69,10 @@ Please provide a detailed, actionable code review."""
             ]
         )
         return message.content[0].text
-    except Exception as e:
+    except anthropic.APIError as e:
         return f"Error calling Claude API: {str(e)}"
+    except anthropic.AuthenticationError as e:
+        return f"Authentication error: {str(e)}"
 
 
 def main():

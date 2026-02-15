@@ -6,6 +6,7 @@
 import { render, screen } from '@testing-library/react'
 import Header from '@/components/Header'
 import TabNavigation from '@/components/TabNavigation'
+import FrameworkTab from '@/components/tabs/FrameworkTab'
 import Home from '@/app/page'
 
 describe('Backward Compatibility Regression Tests', () => {

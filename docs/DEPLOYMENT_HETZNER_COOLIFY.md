@@ -603,4 +603,3 @@ Your BearOps Revenue Growth Platform is now live! 🚀
 - **Coolify Docs:** https://coolify.io/docs
 - **Hetzner Docs:** https://docs.hetzner.com/
 - **Coolify Discord:** https://discord.gg/coolify
-
