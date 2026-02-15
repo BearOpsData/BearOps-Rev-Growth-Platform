@@ -28,7 +28,8 @@ def get_diff(base_ref: str, head_ref: str) -> str:
 
 def call_claude_api(diff_content: str, api_key: str) -> str:
     """Call Claude API to review the code."""
-    import requests
+    import anthropic
+    from anthropic import Anthropic
     
     if not diff_content.strip():
         return "No code changes detected in this PR."
@@ -55,33 +56,23 @@ Code diff:
 
 Please provide a detailed, actionable code review."""
 
-    url = "https://api.anthropic.com/v1/messages"
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    
-    payload = {
-        "model": "claude-3-5-sonnet-20241022",
-        "max_tokens": 4000,
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    }
-    
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=60)
-        response.raise_for_status()
-        result = response.json()
-        return result['content'][0]['text']
-    except requests.exceptions.RequestException as e:
+        client = Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=4000,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+        return message.content[0].text
+    except anthropic.APIError as e:
         return f"Error calling Claude API: {str(e)}"
-    except (KeyError, IndexError) as e:
-        return f"Error parsing Claude API response: {str(e)}"
+    except anthropic.AuthenticationError as e:
+        return f"Authentication error: {str(e)}"
 
 
 def main():

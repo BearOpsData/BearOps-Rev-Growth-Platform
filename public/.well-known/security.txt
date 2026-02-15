@@ -1,0 +1,30 @@
+Contact: security@bearops.com
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://bearops.com/.well-known/security.txt
+Policy: https://bearops.com/security-policy
+
+# Security Disclosure Policy
+
+If you discover a security vulnerability, please email security@bearops.com
+with the details. We appreciate responsible disclosure and will work with you
+to address any issues.
+
+# Scope
+
+This policy applies to:
+- bearops.com and all subdomains
+- BearOps Revenue Growth Platform
+- All associated services
+
+# Out of Scope
+
+- Social engineering attacks
+- Physical attacks
+- Denial of service attacks
+- Issues requiring physical access to devices
+
+# Recognition
+
+We recognize security researchers who help us improve our security posture.
+
